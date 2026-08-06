@@ -1,0 +1,35 @@
+# Build output
+target/
+build/
+dist/
+out/
+
+# Dependencies
+node_modules/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+.DS_Store
+
+# Logs
+*.log
+logs/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+serviceAccountKey*.json
+firebase-adminsdk*.json
+
+# Local data volumes
+data/
+.docker-data/
+
+# Maven wrapper download
+.mvn/wrapper/maven-wrapper.jar
