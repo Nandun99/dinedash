@@ -20,6 +20,13 @@
 
     <modules>
         <module>shared/dinedash-common</module>
+        <module>services/api-gateway</module>
+        <module>services/auth-user-service</module>
+        <module>services/restaurant-service</module>
+        <module>services/order-service</module>
+        <module>services/payment-service</module>
+        <module>services/delivery-service</module>
+        <module>services/notification-service</module>
     </modules>
 
     <properties>
