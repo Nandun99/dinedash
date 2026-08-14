@@ -1,5 +1,7 @@
 package com.dinedash.auth.web;
 
+import com.dinedash.auth.dto.AuthResponse;
+import com.dinedash.auth.dto.LoginRequest;
 import com.dinedash.auth.dto.RegisterRequest;
 import com.dinedash.auth.dto.UserResponse;
 import com.dinedash.auth.service.AuthService;
@@ -23,5 +25,10 @@ public class AuthController {
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponse register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
+    }
+
+    @PostMapping("/login")
+    public AuthResponse login(@Valid @RequestBody LoginRequest request) {
+        return authService.login(request);
     }
 }
