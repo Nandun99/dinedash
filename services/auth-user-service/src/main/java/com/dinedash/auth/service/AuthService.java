@@ -10,6 +10,7 @@ import com.dinedash.auth.exception.ConflictException;
 import com.dinedash.auth.exception.UnauthorizedException;
 import com.dinedash.auth.repository.UserRepository;
 import com.dinedash.auth.security.JwtService;
+import com.dinedash.auth.security.RefreshTokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +27,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
@@ -43,15 +45,29 @@ public class AuthService {
         return UserResponse.from(saved);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByEmailIgnoreCase(normalize(request.email()))
                 .filter(u -> passwordEncoder.matches(request.password(), u.getPasswordHash()))
                 .orElseThrow(() -> new UnauthorizedException("Invalid email or password"));
+        return issueTokens(user);
+    }
+
+    @Transactional(noRollbackFor = UnauthorizedException.class)
+    public AuthResponse refresh(String refreshToken) {
+        return issueTokens(refreshTokenService.consume(refreshToken));
+    }
+
+    @Transactional
+    public void logout(String refreshToken) {
+        refreshTokenService.revoke(refreshToken);
+    }
+
+    private AuthResponse issueTokens(User user) {
         if (!user.isEnabled()) {
             throw new UnauthorizedException("This account has been disabled");
         }
-        return AuthResponse.bearer(jwtService.generateAccessToken(user),
+        return AuthResponse.bearer(jwtService.generateAccessToken(user), refreshTokenService.issue(user),
                 jwtService.accessTokenTtlSeconds(), UserResponse.from(user));
     }
 
