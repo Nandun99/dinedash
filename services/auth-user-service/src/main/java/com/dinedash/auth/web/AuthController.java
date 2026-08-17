@@ -2,6 +2,7 @@ package com.dinedash.auth.web;
 
 import com.dinedash.auth.dto.AuthResponse;
 import com.dinedash.auth.dto.LoginRequest;
+import com.dinedash.auth.dto.RefreshRequest;
 import com.dinedash.auth.dto.RegisterRequest;
 import com.dinedash.auth.dto.UserResponse;
 import com.dinedash.auth.service.AuthService;
@@ -30,5 +31,16 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
+    }
+
+    @PostMapping("/refresh")
+    public AuthResponse refresh(@Valid @RequestBody RefreshRequest request) {
+        return authService.refresh(request.refreshToken());
+    }
+
+    @PostMapping("/logout")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void logout(@Valid @RequestBody RefreshRequest request) {
+        authService.logout(request.refreshToken());
     }
 }
