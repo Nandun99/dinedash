@@ -2,11 +2,12 @@ package com.dinedash.auth.dto;
 
 public record AuthResponse(
         String accessToken,
+        String refreshToken,
         String tokenType,
         long expiresIn,
         UserResponse user
 ) {
-    public static AuthResponse bearer(String accessToken, long expiresIn, UserResponse user) {
-        return new AuthResponse(accessToken, "Bearer", expiresIn, user);
+    public static AuthResponse bearer(String accessToken, String refreshToken, long expiresIn, UserResponse user) {
+        return new AuthResponse(accessToken, refreshToken, "Bearer", expiresIn, user);
     }
 }
