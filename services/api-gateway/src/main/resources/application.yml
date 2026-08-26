@@ -36,6 +36,19 @@ spring:
           default-filters:
             - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
 
+dinedash:
+  jwt:
+    secret: ${JWT_SECRET}
+    issuer: dinedash-auth
+  security:
+    # Requests matching these are allowed without a token.
+    # Format: METHOD:pattern, or just pattern for any method.
+    public-paths:
+      - /api/auth/**
+      - GET:/api/restaurants/**
+      - POST:/api/payments/webhooks/**
+      - /actuator/health/**
+
 management:
   endpoints:
     web:
