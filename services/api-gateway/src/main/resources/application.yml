@@ -4,12 +4,58 @@ server:
 spring:
   application:
     name: api-gateway
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: auth-user-service
+              uri: ${AUTH_SERVICE_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/auth/**,/api/users/**,/api/admin/users/**
+            - id: restaurant-service
+              uri: ${RESTAURANT_SERVICE_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/restaurants/**,/api/owner/**,/api/admin/restaurants/**
+            - id: order-service
+              uri: ${ORDER_SERVICE_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/orders/**,/api/admin/orders/**
+            - id: payment-service
+              uri: ${PAYMENT_SERVICE_URL:http://localhost:8084}
+              predicates:
+                - Path=/api/payments/**
+            - id: delivery-service
+              uri: ${DELIVERY_SERVICE_URL:http://localhost:8085}
+              predicates:
+                - Path=/api/deliveries/**,/api/drivers/**
+            - id: notification-service
+              uri: ${NOTIFICATION_SERVICE_URL:http://localhost:8086}
+              predicates:
+                - Path=/api/notifications/**
+          default-filters:
+            - DedupeResponseHeader=Access-Control-Allow-Origin Access-Control-Allow-Credentials, RETAIN_UNIQUE
+
+dinedash:
+  jwt:
+    secret: ${JWT_SECRET}
+    issuer: dinedash-auth
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:5173}
+  security:
+    # Requests matching these are allowed without a token.
+    # Format: METHOD:pattern, or just pattern for any method.
+    public-paths:
+      - /api/auth/**
+      - GET:/api/restaurants/**
+      - POST:/api/payments/webhooks/**
+      - /actuator/health/**
 
 management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,gateway
   endpoint:
     health:
       probes:
