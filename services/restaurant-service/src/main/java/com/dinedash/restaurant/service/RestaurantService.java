@@ -48,6 +48,13 @@ public class RestaurantService {
         return RestaurantResponse.from(restaurantRepository.save(restaurant));
     }
 
+    public RestaurantResponse setAcceptingOrders(Long ownerId, String restaurantId, boolean accepting) {
+        Restaurant restaurant = getOwned(ownerId, restaurantId);
+        restaurant.setAcceptingOrders(accepting);
+        log.info("Restaurant {} accepting orders: {}", restaurantId, accepting);
+        return RestaurantResponse.from(restaurantRepository.save(restaurant));
+    }
+
     public Restaurant getOwned(Long ownerId, String restaurantId) {
         return restaurantRepository.findByIdAndOwnerId(restaurantId, ownerId)
                 .orElseThrow(() -> new NotFoundException("Restaurant not found"));
