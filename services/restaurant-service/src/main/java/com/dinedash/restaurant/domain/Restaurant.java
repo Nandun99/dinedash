@@ -11,7 +11,6 @@ import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 import org.springframework.data.mongodb.core.mapping.FieldType;
@@ -38,10 +37,8 @@ public class Restaurant {
     @Indexed
     private Long ownerId;
 
-    @TextIndexed(weight = 3)
     private String name;
 
-    @TextIndexed
     private String description;
 
     @Indexed
