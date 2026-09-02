@@ -4,7 +4,6 @@ import com.dinedash.restaurant.domain.Restaurant;
 import com.dinedash.restaurant.dto.PageResponse;
 import com.dinedash.restaurant.dto.RestaurantCard;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.GeoResults;
@@ -57,17 +56,12 @@ public class RestaurantSearchService {
         }
 
         Query query = new Query(filter)
-                .with(PageRequest.of(page, size + 1, Sort.by("name")));
+                .with(Sort.by("name"))
+                .skip((long) page * size)
+                .limit(size + 1);
         List<RestaurantCard> cards = mongoTemplate.find(query, Restaurant.class).stream()
                 .map(r -> RestaurantCard.from(r, null))
                 .toList();
-        // PageRequest offset uses size+1, so recompute skip explicitly
-        if (page > 0) {
-            query.skip((long) page * size).limit(size + 1);
-            cards = mongoTemplate.find(query, Restaurant.class).stream()
-                    .map(r -> RestaurantCard.from(r, null))
-                    .toList();
-        }
         return toPage(cards, page, size);
     }
 
