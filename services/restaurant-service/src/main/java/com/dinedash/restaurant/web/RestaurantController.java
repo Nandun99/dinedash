@@ -1,10 +1,12 @@
 package com.dinedash.restaurant.web;
 
 import com.dinedash.common.error.NotFoundException;
+import com.dinedash.restaurant.dto.MenuItemResponse;
 import com.dinedash.restaurant.dto.PageResponse;
 import com.dinedash.restaurant.dto.RestaurantCard;
 import com.dinedash.restaurant.dto.RestaurantResponse;
 import com.dinedash.restaurant.repository.RestaurantRepository;
+import com.dinedash.restaurant.service.MenuService;
 import com.dinedash.restaurant.service.RestaurantSearchService;
 import com.dinedash.restaurant.service.RestaurantSearchService.SearchCriteria;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/restaurants")
 @RequiredArgsConstructor
@@ -21,6 +25,7 @@ public class RestaurantController {
 
     private final RestaurantSearchService searchService;
     private final RestaurantRepository restaurantRepository;
+    private final MenuService menuService;
 
     @GetMapping
     public PageResponse<RestaurantCard> search(@RequestParam(required = false) String q,
@@ -38,5 +43,10 @@ public class RestaurantController {
         return restaurantRepository.findById(restaurantId)
                 .map(RestaurantResponse::from)
                 .orElseThrow(() -> new NotFoundException("Restaurant not found"));
+    }
+
+    @GetMapping("/{restaurantId}/menu")
+    public List<MenuItemResponse> menu(@PathVariable String restaurantId) {
+        return menuService.publicMenu(restaurantId);
     }
 }
