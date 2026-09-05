@@ -9,6 +9,13 @@ spring:
       uri: ${MONGO_URI:mongodb://dinedash:dinedash@localhost:27017/dinedash_restaurant?authSource=admin}
       auto-index-creation: true
 
+dinedash:
+  storage:
+    region: ${AWS_REGION:ap-south-1}
+    bucket: ${S3_BUCKET:dinedash-media}
+    public-base-url: ${MEDIA_BASE_URL:}
+    upload-url-ttl: 10m
+
 management:
   endpoints:
     web:
