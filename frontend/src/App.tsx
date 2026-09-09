@@ -4,6 +4,7 @@ import LoginPage from './pages/auth/LoginPage'
 import RegisterPage from './pages/auth/RegisterPage'
 import NotFoundPage from './pages/NotFoundPage'
 import OwnerDashboardPage from './pages/owner/OwnerDashboardPage'
+import OwnerMenuPage from './pages/owner/OwnerMenuPage'
 import ProtectedRoute from './auth/ProtectedRoute'
 import RestaurantDetailPage from './pages/restaurants/RestaurantDetailPage'
 import RestaurantListPage from './pages/restaurants/RestaurantListPage'
@@ -23,6 +24,14 @@ export default function App() {
             element={
               <ProtectedRoute roles={['RESTAURANT_OWNER']}>
                 <OwnerDashboardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/owner/restaurants/:id/menu"
+            element={
+              <ProtectedRoute roles={['RESTAURANT_OWNER']}>
+                <OwnerMenuPage />
               </ProtectedRoute>
             }
           />
