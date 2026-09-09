@@ -4,6 +4,21 @@ server:
 spring:
   application:
     name: order-service
+  datasource:
+    url: jdbc:oracle:thin:@//${ORACLE_HOST:localhost}:${ORACLE_PORT:1521}/${ORACLE_SERVICE:FREEPDB1}
+    username: ${ORDER_DB_USER:dinedash_order}
+    password: ${ORDER_DB_PASSWORD:dinedash}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
 
 management:
   endpoints:
