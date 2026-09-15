@@ -32,6 +32,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final RestaurantClient restaurantClient;
+    private final OrderEvents events;
 
     @Transactional
     public OrderResponse placeOrder(CurrentUser customer, PlaceOrderRequest request) {
@@ -70,6 +71,7 @@ public class OrderService {
         order.setTotal(subtotal.add(quote.deliveryFee()));
 
         Order saved = orderRepository.save(order);
+        events.created(saved);
         log.info("Order {} placed by customer {} at restaurant {} for {}", saved.getId(), customer.id(),
                 saved.getRestaurantId(), saved.getTotal());
         return OrderResponse.from(saved);
