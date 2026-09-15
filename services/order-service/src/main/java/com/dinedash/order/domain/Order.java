@@ -110,6 +110,24 @@ public class Order {
     @OrderBy("changedAt ASC")
     private List<OrderStatusChange> history = new ArrayList<>();
 
+    /**
+     * Moves the order to a new status and records it in the history.
+     *
+     * @return false if the order is already in that status (duplicate event), true if it changed
+     * @throws InvalidStatusTransitionException if the move is not allowed
+     */
+    public boolean transitionTo(OrderStatus target, String note) {
+        if (status == target) {
+            return false;
+        }
+        if (!status.canMoveTo(target)) {
+            throw new InvalidStatusTransitionException(status, target);
+        }
+        status = target;
+        history.add(new OrderStatusChange(this, target, note, Instant.now()));
+        return true;
+    }
+
     public void addItem(OrderItem item) {
         item.setOrder(this);
         items.add(item);

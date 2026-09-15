@@ -1,9 +1,11 @@
 package com.dinedash.order.web;
 
 import com.dinedash.common.security.CurrentUser;
+import com.dinedash.order.dto.CancelOrderRequest;
 import com.dinedash.order.dto.OrderResponse;
 import com.dinedash.order.dto.OrderSummary;
 import com.dinedash.order.dto.PlaceOrderRequest;
+import com.dinedash.order.service.OrderLifecycleService;
 import com.dinedash.order.service.OrderService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class OrderController {
 
     private final OrderService orderService;
+    private final OrderLifecycleService lifecycleService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -41,5 +44,11 @@ public class OrderController {
     @GetMapping("/{orderId}")
     public OrderResponse get(@AuthenticationPrincipal CurrentUser user, @PathVariable Long orderId) {
         return orderService.get(user, orderId);
+    }
+
+    @PostMapping("/{orderId}/cancel")
+    public OrderResponse cancel(@AuthenticationPrincipal CurrentUser user, @PathVariable Long orderId,
+                                @Valid @RequestBody(required = false) CancelOrderRequest request) {
+        return lifecycleService.cancelByCustomer(user, orderId, request != null ? request.reason() : null);
     }
 }
