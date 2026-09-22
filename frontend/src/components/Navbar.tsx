@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { homePathFor } from '../auth/roleRoutes'
 import { useAuth } from '../auth/useAuth'
+import { useCart } from '../cart/useCart'
 
 const roleLabel = {
   CUSTOMER: 'Customer',
@@ -11,6 +12,7 @@ const roleLabel = {
 
 export default function Navbar() {
   const { user, logout } = useAuth()
+  const { itemCount } = useCart()
   const navigate = useNavigate()
 
   const onLogout = async () => {
@@ -24,6 +26,11 @@ export default function Navbar() {
         <Link to={user ? homePathFor(user.role) : '/'} className="text-xl font-bold text-brand-600">
           DineDash
         </Link>
+        {(!user || user.role === 'CUSTOMER') && itemCount > 0 && (
+          <Link to="/cart" className="ml-auto mr-4 rounded-full bg-brand-50 px-3 py-1 text-sm font-medium text-brand-700">
+            Cart · {itemCount}
+          </Link>
+        )}
         {user ? (
           <div className="flex items-center gap-4 text-sm">
             <span className="hidden text-stone-600 sm:inline">
