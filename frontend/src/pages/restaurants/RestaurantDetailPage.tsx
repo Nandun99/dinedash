@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
 import { restaurantApi } from '../../api/restaurants'
+import { useCart } from '../../cart/useCart'
 import Alert from '../../components/ui/Alert'
 import type { MenuItem } from '../../types/restaurant'
 import { formatPrice } from '../../utils/format'
@@ -11,6 +12,7 @@ export default function RestaurantDetailPage() {
   const { id = '' } = useParams()
   const restaurant = useQuery({ queryKey: ['restaurant', id], queryFn: () => restaurantApi.get(id) })
   const menu = useQuery({ queryKey: ['menu', id], queryFn: () => restaurantApi.menu(id) })
+  const { add } = useCart()
 
   const byCategory = useMemo(() => {
     const groups = new Map<string, MenuItem[]>()
@@ -57,7 +59,22 @@ export default function RestaurantDetailPage() {
           <div key={category}>
             <h2 className="mb-3 text-lg font-semibold">{category}</h2>
             <div className="grid gap-3 sm:grid-cols-2">
-              {items.map((item) => <MenuItemRow key={item.id} item={item} />)}
+              {items.map((item) => (
+                <MenuItemRow
+                  key={item.id}
+                  item={item}
+                  action={
+                    r.openNow && (
+                      <button
+                        onClick={() => add({ id: r.id, name: r.name, deliveryFee: r.deliveryFee }, item)}
+                        className="rounded-full bg-brand-600 px-3 py-1 text-xs font-semibold text-white hover:bg-brand-700"
+                      >
+                        Add
+                      </button>
+                    )
+                  }
+                />
+              ))}
             </div>
           </div>
         ))}
