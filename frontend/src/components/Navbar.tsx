@@ -33,6 +33,9 @@ export default function Navbar() {
         )}
         {user ? (
           <div className="flex items-center gap-4 text-sm">
+            {user.role === 'CUSTOMER' && (
+              <Link to="/orders" className="font-medium hover:text-brand-600">Orders</Link>
+            )}
             <span className="hidden text-stone-600 sm:inline">
               {user.fullName}
               <span className="ml-2 rounded-full bg-stone-100 px-2 py-0.5 text-xs">{roleLabel[user.role]}</span>
