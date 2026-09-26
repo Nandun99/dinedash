@@ -60,6 +60,9 @@ export default function OwnerDashboardPage() {
                 />
                 Accepting orders
               </label>
+              <Link to={`/owner/restaurants/${r.id}/orders`} className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm text-white hover:bg-brand-700">
+                Orders
+              </Link>
               <Link to={`/owner/restaurants/${r.id}/menu`} className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm hover:bg-stone-100">
                 Manage menu
               </Link>
