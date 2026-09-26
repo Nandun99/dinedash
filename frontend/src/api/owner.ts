@@ -56,3 +56,29 @@ export const ownerApi = {
     return data.url
   },
 }
+
+export interface KitchenOrder {
+  orderId: number
+  restaurantId: string
+  customerName: string
+  items: { menuItemId: string; name: string; quantity: number; unitPrice: number }[]
+  total: number
+  notes: string | null
+  status: 'NEW' | 'ACCEPTED' | 'READY' | 'REJECTED' | 'CANCELLED'
+  rejectReason: string | null
+  prepMinutes: number | null
+  receivedAt: string
+  acceptedAt: string | null
+  readyAt: string | null
+}
+
+export const kitchenApi = {
+  orders: (id: string, active = true) =>
+    api.get<KitchenOrder[]>(`${base}/${id}/orders`, { params: { active } }).then((r) => r.data),
+  accept: (id: string, orderId: number, prepMinutes: number) =>
+    api.post<KitchenOrder>(`${base}/${id}/orders/${orderId}/accept`, { prepMinutes }).then((r) => r.data),
+  reject: (id: string, orderId: number, reason: string) =>
+    api.post<KitchenOrder>(`${base}/${id}/orders/${orderId}/reject`, { reason }).then((r) => r.data),
+  ready: (id: string, orderId: number) =>
+    api.post<KitchenOrder>(`${base}/${id}/orders/${orderId}/ready`).then((r) => r.data),
+}
