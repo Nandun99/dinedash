@@ -69,5 +69,4 @@ public class StripeSdkGateway implements StripeGateway {
     private interface StripeCall<T> {
         T run() throws StripeException;
     }
-
 }
