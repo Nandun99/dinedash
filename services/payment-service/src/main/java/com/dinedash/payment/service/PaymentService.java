@@ -47,6 +47,10 @@ public class PaymentService {
                 intent = existing;
             }
         }
+        if (payment.getStatus() == PaymentStatus.FAILED) {
+            // Customer is retrying with another card
+            payment.setStatus(PaymentStatus.PENDING);
+        }
         if (intent == null) {
             intent = stripe.createIntent(payment.amountInMinorUnits(), payment.getCurrency(), orderId, customer.id());
             payment.setProviderIntentId(intent.id());
