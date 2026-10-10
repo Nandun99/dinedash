@@ -56,7 +56,7 @@ export default function CheckoutPage() {
     },
     onSuccess: (order) => {
       clear()
-      navigate(`/orders/${order.id}`, { replace: true })
+      navigate(`/orders/${order.id}/pay`, { replace: true })
     },
   })
 

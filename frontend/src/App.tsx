@@ -7,6 +7,7 @@ import CartPage from './pages/cart/CartPage'
 import CheckoutPage from './pages/cart/CheckoutPage'
 import OrderDetailPage from './pages/orders/OrderDetailPage'
 import OrdersPage from './pages/orders/OrdersPage'
+import PaymentPage from './pages/payment/PaymentPage'
 import OwnerDashboardPage from './pages/owner/OwnerDashboardPage'
 import OwnerMenuPage from './pages/owner/OwnerMenuPage'
 import KitchenPage from './pages/owner/KitchenPage'
@@ -26,6 +27,7 @@ export default function App() {
           <Route path="/checkout" element={<ProtectedRoute roles={['CUSTOMER']}><CheckoutPage /></ProtectedRoute>} />
           <Route path="/orders" element={<ProtectedRoute roles={['CUSTOMER']}><OrdersPage /></ProtectedRoute>} />
           <Route path="/orders/:id" element={<ProtectedRoute><OrderDetailPage /></ProtectedRoute>} />
+          <Route path="/orders/:id/pay" element={<ProtectedRoute roles={['CUSTOMER']}><PaymentPage /></ProtectedRoute>} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route
