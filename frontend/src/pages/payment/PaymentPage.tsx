@@ -1,6 +1,7 @@
 import { Elements } from '@stripe/react-stripe-js'
 import { loadStripe, type Stripe } from '@stripe/stripe-js'
 import { useQuery } from '@tanstack/react-query'
+import axios from 'axios'
 import { useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { paymentApi } from '../../api/payments'
@@ -20,6 +21,9 @@ export default function PaymentPage() {
     queryKey: ['payment-intent', id],
     queryFn: () => paymentApi.startPayment(id),
     staleTime: Infinity,
+    // Right after checkout the payment record may not exist yet (409); retry a few times
+    retry: (count, err) => axios.isAxiosError(err) && err.response?.status === 409 && count < 5,
+    retryDelay: 1_000,
   })
   const stripePromise = useMemo(() => (intent.data ? stripeFor(intent.data.publishableKey) : null), [intent.data])
 

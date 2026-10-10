@@ -73,7 +73,12 @@ export default function OrderDetailPage() {
       </div>
 
       {cancellable && (
-        <div className="mt-6">
+        <div className="mt-6 flex gap-3">
+          {['PENDING_PAYMENT', 'PAYMENT_FAILED'].includes(order.status) && (
+            <Link to={`/orders/${order.id}/pay`} className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+              {order.status === 'PAYMENT_FAILED' ? 'Try another card' : 'Pay now'}
+            </Link>
+          )}
           <Button variant="danger" loading={cancel.isPending} onClick={() => confirm('Cancel this order?') && cancel.mutate()}>
             Cancel order
           </Button>
