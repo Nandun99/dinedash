@@ -4,6 +4,10 @@ server:
 spring:
   application:
     name: delivery-service
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://dinedash:dinedash@localhost:27017/dinedash_delivery?authSource=admin}
+      auto-index-creation: true
 
 management:
   endpoints:
