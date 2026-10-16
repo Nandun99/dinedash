@@ -28,6 +28,10 @@ dinedash:
     search-radius-km: 8
     driver-stale-after: 5m
     retry-interval: 30s
+  firebase:
+    # When disabled, live tracking falls back to polling the REST API.
+    enabled: ${FIREBASE_ENABLED:false}
+    database-url: ${FIREBASE_DATABASE_URL:}
 
 management:
   endpoints:

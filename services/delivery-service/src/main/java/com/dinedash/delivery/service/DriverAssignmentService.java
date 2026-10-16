@@ -5,6 +5,7 @@ import com.dinedash.delivery.config.AssignmentProperties;
 import com.dinedash.delivery.domain.Delivery;
 import com.dinedash.delivery.domain.Driver;
 import com.dinedash.delivery.repository.DeliveryRepository;
+import com.dinedash.delivery.tracking.LiveTrackingPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.geo.Distance;
@@ -39,6 +40,7 @@ public class DriverAssignmentService {
     private final DeliveryRepository deliveryRepository;
     private final DeliveryEvents events;
     private final AssignmentProperties properties;
+    private final LiveTrackingPublisher tracking;
 
     public boolean tryAssign(Delivery delivery) {
         if (delivery.getStatus() != Delivery.Status.SEARCHING) {
@@ -64,6 +66,7 @@ public class DriverAssignmentService {
         delivery.setAssignedAt(Instant.now());
         deliveryRepository.save(delivery);
         events.publish(delivery, DeliveryUpdatedEvent.Status.ASSIGNED);
+        tracking.publishStatus(delivery);
         log.info("Assigned driver {} to order {}", d.getId(), delivery.getOrderId());
         return true;
     }

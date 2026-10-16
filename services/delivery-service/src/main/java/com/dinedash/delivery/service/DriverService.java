@@ -6,7 +6,9 @@ import com.dinedash.delivery.domain.Driver;
 import com.dinedash.delivery.dto.DriverDtos.DriverResponse;
 import com.dinedash.delivery.dto.DriverDtos.LocationRequest;
 import com.dinedash.delivery.dto.DriverDtos.ProfileRequest;
+import com.dinedash.delivery.repository.DeliveryRepository;
 import com.dinedash.delivery.repository.DriverRepository;
+import com.dinedash.delivery.tracking.LiveTrackingPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
@@ -20,6 +22,8 @@ import java.time.Instant;
 public class DriverService {
 
     private final DriverRepository driverRepository;
+    private final DeliveryRepository deliveryRepository;
+    private final LiveTrackingPublisher tracking;
 
     public DriverResponse me(Long driverId) {
         return DriverResponse.from(find(driverId));
@@ -61,7 +65,12 @@ public class DriverService {
     public Driver updateLocation(Long driverId, LocationRequest location) {
         Driver driver = find(driverId);
         applyLocation(driver, location);
-        return driverRepository.save(driver);
+        Driver saved = driverRepository.save(driver);
+        if (saved.getCurrentDeliveryId() != null) {
+            deliveryRepository.findById(saved.getCurrentDeliveryId()).ifPresent(d ->
+                    tracking.publishLocation(d.getOrderId(), location.latitude(), location.longitude()));
+        }
+        return saved;
     }
 
     public Driver find(Long driverId) {
