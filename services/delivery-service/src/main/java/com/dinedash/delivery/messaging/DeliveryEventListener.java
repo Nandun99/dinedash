@@ -1,10 +1,12 @@
 package com.dinedash.delivery.messaging;
 
+import com.dinedash.common.event.OrderCancelledEvent;
 import com.dinedash.common.event.OrderPaidEvent;
 import com.dinedash.common.event.RestaurantOrderUpdatedEvent;
 import com.dinedash.common.event.Topics;
 import com.dinedash.delivery.domain.Delivery;
 import com.dinedash.delivery.repository.DeliveryRepository;
+import com.dinedash.delivery.service.DeliveryService;
 import com.dinedash.delivery.service.DriverAssignmentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +23,7 @@ public class DeliveryEventListener {
 
     private final DeliveryRepository deliveryRepository;
     private final DriverAssignmentService assignmentService;
+    private final DeliveryService deliveryService;
 
     @KafkaListener(topics = Topics.ORDER_PAID)
     public void onOrderPaid(OrderPaidEvent event) {
@@ -58,5 +61,10 @@ public class DeliveryEventListener {
             // order.paid not processed yet; throw so the record is retried
             throw new IllegalStateException("Delivery for order " + event.orderId() + " not found yet");
         });
+    }
+
+    @KafkaListener(topics = Topics.ORDER_CANCELLED)
+    public void onOrderCancelled(OrderCancelledEvent event) {
+        deliveryService.cancelForOrder(event.orderId());
     }
 }
