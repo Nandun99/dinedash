@@ -4,6 +4,34 @@ server:
 spring:
   application:
     name: delivery-service
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://dinedash:dinedash@localhost:27017/dinedash_delivery?authSource=admin}
+      auto-index-creation: true
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+    consumer:
+      group-id: delivery-service
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      properties:
+        spring.deserializer.value.delegate.class: org.springframework.kafka.support.serializer.JsonDeserializer
+        spring.json.trusted.packages: com.dinedash.common.event
+
+dinedash:
+  assignment:
+    search-radius-km: 8
+    driver-stale-after: 5m
+    retry-interval: 30s
+  firebase:
+    # When disabled, live tracking falls back to polling the REST API.
+    enabled: ${FIREBASE_ENABLED:false}
+    database-url: ${FIREBASE_DATABASE_URL:}
 
 management:
   endpoints:
