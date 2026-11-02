@@ -6,9 +6,13 @@ import com.dinedash.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,5 +47,20 @@ public class NotificationController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void markAllRead(@AuthenticationPrincipal CurrentUser user) {
         notifications.markAllRead(user.id());
+    }
+
+    @PostMapping("/devices")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void registerDevice(@AuthenticationPrincipal CurrentUser user, @Valid @RequestBody DeviceRequest request) {
+        notifications.registerDevice(user.id(), request.token());
+    }
+
+    @DeleteMapping("/devices/{token}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void unregisterDevice(@AuthenticationPrincipal CurrentUser user, @PathVariable String token) {
+        notifications.unregisterDevice(user.id(), token);
+    }
+
+    public record DeviceRequest(@NotBlank String token) {
     }
 }
