@@ -2,6 +2,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { homePathFor } from '../auth/roleRoutes'
 import { useAuth } from '../auth/useAuth'
 import { useCart } from '../cart/useCart'
+import NotificationBell from './NotificationBell'
 
 const roleLabel = {
   CUSTOMER: 'Customer',
@@ -33,6 +34,7 @@ export default function Navbar() {
         )}
         {user ? (
           <div className="flex items-center gap-4 text-sm">
+            <NotificationBell />
             {user.role === 'CUSTOMER' && (
               <Link to="/orders" className="font-medium hover:text-brand-600">Orders</Link>
             )}
