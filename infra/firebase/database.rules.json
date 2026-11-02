@@ -1,0 +1,10 @@
+{
+  "rules": {
+    "deliveries": {
+      "$orderId": {
+        ".read": "auth != null && auth.token.orderId == $orderId",
+        ".write": false
+      }
+    }
+  }
+}

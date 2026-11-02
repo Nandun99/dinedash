@@ -7,6 +7,8 @@ import Button from '../../components/ui/Button'
 import { statusLabel } from '../../types/order'
 import { formatDateTime, formatPrice } from '../../utils/format'
 import StatusBadge from './StatusBadge'
+import TrackingMap from './TrackingMap'
+import { useDriverLocation } from '../../hooks/useDriverLocation'
 
 const ACTIVE = ['PENDING_PAYMENT', 'PAID', 'ACCEPTED', 'READY_FOR_PICKUP', 'PICKED_UP']
 
@@ -19,6 +21,8 @@ export default function OrderDetailPage() {
     // Poll while the order is moving; live push notifications come later
     refetchInterval: (q) => (q.state.data && ACTIVE.includes(q.state.data.status) ? 10_000 : false),
   })
+  const tracking = !!order && ['READY_FOR_PICKUP', 'PICKED_UP'].includes(order.status) || !!order?.driverId && order.status !== 'DELIVERED'
+  const driverPosition = useDriverLocation(Number(id), tracking)
   const cancel = useMutation({
     mutationFn: () => orderApi.cancel(Number(id)),
     onSuccess: (o) => qc.setQueryData(['order', id], o),
@@ -42,6 +46,12 @@ export default function OrderDetailPage() {
       {order.cancelReason && <div className="mt-4"><Alert kind="info">{order.cancelReason}</Alert></div>}
       {cancel.isError && <div className="mt-4"><Alert>{errorMessage(cancel.error)}</Alert></div>}
       {order.driverName && <p className="mt-4 text-sm">Your driver: <span className="font-medium">{order.driverName}</span></p>}
+
+      {tracking && (
+        <div className="mt-6">
+          <TrackingMap pickup={[order.pickupLat, order.pickupLng]} dropoff={[order.dropoffLat, order.dropoffLng]} driver={driverPosition} />
+        </div>
+      )}
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         <div className="rounded-2xl bg-white p-5 shadow-sm">
