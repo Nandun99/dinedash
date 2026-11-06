@@ -47,7 +47,15 @@ export default function OwnerDashboardPage() {
         {restaurants?.map((r) => (
           <div key={r.id} className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-white p-5 shadow-sm">
             <div>
-              <h2 className="font-semibold">{r.name}</h2>
+              <h2 className="font-semibold">
+                {r.name}
+                {r.approvalStatus === 'PENDING_APPROVAL' && (
+                  <span className="ml-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-normal text-amber-700">Waiting for approval</span>
+                )}
+                {r.approvalStatus === 'SUSPENDED' && (
+                  <span className="ml-2 rounded-full bg-red-100 px-2 py-0.5 text-xs font-normal text-red-700">Suspended</span>
+                )}
+              </h2>
               <p className="text-sm text-stone-500">{r.address.street}, {r.address.city}</p>
             </div>
             <div className="flex items-center gap-3">
