@@ -26,13 +26,14 @@ public record RestaurantResponse(
         boolean openNow,
         BigDecimal deliveryFee,
         BigDecimal minimumOrder,
-        int averagePrepMinutes
+        int averagePrepMinutes,
+        Restaurant.ApprovalStatus approvalStatus
 ) {
     public static RestaurantResponse from(Restaurant r) {
         return new RestaurantResponse(r.getId(), r.getOwnerId(), r.getName(), r.getDescription(), r.getCuisines(),
                 r.getPhone(), r.getAddress(), r.getLocation().getY(), r.getLocation().getX(), r.getLogoUrl(),
                 r.getCoverImageUrl(), r.getOpensAt(), r.getClosesAt(), r.isAcceptingOrders(),
                 r.canTakeOrders(ZonedDateTime.now()), r.getDeliveryFee(), r.getMinimumOrder(),
-                r.getAveragePrepMinutes());
+                r.getAveragePrepMinutes(), r.getApprovalStatus());
     }
 }

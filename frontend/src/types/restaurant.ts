@@ -37,6 +37,7 @@ export interface Restaurant {
   deliveryFee: number
   minimumOrder: number
   averagePrepMinutes: number
+  approvalStatus?: 'PENDING_APPROVAL' | 'ACTIVE' | 'SUSPENDED' | null
 }
 
 export interface MenuItem {

@@ -12,6 +12,7 @@ import OwnerDashboardPage from './pages/owner/OwnerDashboardPage'
 import OwnerMenuPage from './pages/owner/OwnerMenuPage'
 import KitchenPage from './pages/owner/KitchenPage'
 import DriverDashboardPage from './pages/driver/DriverDashboardPage'
+import AdminDashboardPage from './pages/admin/AdminDashboardPage'
 import ProtectedRoute from './auth/ProtectedRoute'
 import RestaurantDetailPage from './pages/restaurants/RestaurantDetailPage'
 import RestaurantListPage from './pages/restaurants/RestaurantListPage'
@@ -56,6 +57,7 @@ export default function App() {
             }
           />
           <Route path="/driver" element={<ProtectedRoute roles={['DRIVER']}><DriverDashboardPage /></ProtectedRoute>} />
+          <Route path="/admin/*" element={<ProtectedRoute roles={['ADMIN']}><AdminDashboardPage /></ProtectedRoute>} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>

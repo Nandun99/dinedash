@@ -41,6 +41,7 @@ public class RestaurantController {
     @GetMapping("/{restaurantId}")
     public RestaurantResponse get(@PathVariable String restaurantId) {
         return restaurantRepository.findById(restaurantId)
+                .filter(r -> r.isVisible())
                 .map(RestaurantResponse::from)
                 .orElseThrow(() -> new NotFoundException("Restaurant not found"));
     }

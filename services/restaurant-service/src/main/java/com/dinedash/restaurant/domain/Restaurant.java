@@ -59,6 +59,10 @@ public class Restaurant {
 
     private LocalTime closesAt;
 
+    /** New restaurants need admin approval before they appear to customers. */
+    @Indexed
+    private ApprovalStatus approvalStatus = ApprovalStatus.PENDING_APPROVAL;
+
     /** Manual switch so owners can pause orders, e.g. when the kitchen is busy. */
     private boolean acceptingOrders = true;
 
@@ -90,7 +94,16 @@ public class Restaurant {
                 : !now.isBefore(opensAt) || now.isBefore(closesAt);
     }
 
+    public boolean isVisible() {
+        // Documents created before approvals existed have no status and count as active
+        return approvalStatus == null || approvalStatus == ApprovalStatus.ACTIVE;
+    }
+
     public boolean canTakeOrders(ZonedDateTime time) {
-        return acceptingOrders && isOpenAt(time);
+        return isVisible() && acceptingOrders && isOpenAt(time);
+    }
+
+    public enum ApprovalStatus {
+        PENDING_APPROVAL, ACTIVE, SUSPENDED
     }
 }

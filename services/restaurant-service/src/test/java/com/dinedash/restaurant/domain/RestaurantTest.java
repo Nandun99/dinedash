@@ -35,8 +35,18 @@ class RestaurantTest {
         assertThat(r.canTakeOrders(at("12:00"))).isFalse();
     }
 
+    @Test
+    void pendingRestaurantIsHiddenAndCannotTakeOrders() {
+        Restaurant r = withHours("10:00", "22:00");
+        r.setApprovalStatus(Restaurant.ApprovalStatus.PENDING_APPROVAL);
+
+        assertThat(r.isVisible()).isFalse();
+        assertThat(r.canTakeOrders(at("12:00"))).isFalse();
+    }
+
     private static Restaurant withHours(String open, String close) {
         Restaurant r = new Restaurant();
+        r.setApprovalStatus(Restaurant.ApprovalStatus.ACTIVE);
         r.setOpensAt(LocalTime.parse(open));
         r.setClosesAt(LocalTime.parse(close));
         return r;
