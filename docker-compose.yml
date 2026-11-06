@@ -104,6 +104,158 @@ services:
     entrypoint: ["/bin/bash", "-c", "/opt/mssql-tools18/bin/sqlcmd -C -S mssql -U sa -P \"$$MSSQL_SA_PASSWORD\" -i /scripts/init.sql"]
     restart: "no"
 
+  # ---------------------------------------------------------------------------
+  # Application services. Start only the infrastructure above with:
+  #   docker compose up -d kafka mongodb oracle mssql mssql-init
+  # ---------------------------------------------------------------------------
+  auth-user-service:
+    build: &service-build
+      context: .
+      dockerfile: services/Dockerfile
+      args:
+        SERVICE: auth-user-service
+    image: dinedash/auth-user-service:local
+    environment:
+      SERVER_PORT: 8081
+      MSSQL_HOST: mssql
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Dinedash-123!}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+    depends_on:
+      mssql-init:
+        condition: service_completed_successfully
+
+  restaurant-service:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: restaurant-service
+    image: dinedash/restaurant-service:local
+    environment:
+      SERVER_PORT: 8082
+      MONGO_URI: mongodb://${MONGO_ROOT_USER:-dinedash}:${MONGO_ROOT_PASSWORD:-dinedash}@mongodb:27017/dinedash_restaurant?authSource=admin
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      AWS_REGION: ${AWS_REGION:-ap-south-1}
+      S3_BUCKET: ${S3_BUCKET:-dinedash-media}
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  order-service:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: order-service
+    image: dinedash/order-service:local
+    environment:
+      SERVER_PORT: 8083
+      ORACLE_HOST: oracle
+      ORDER_DB_PASSWORD: ${ORDER_DB_PASSWORD:-dinedash}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      RESTAURANT_SERVICE_URL: http://restaurant-service:8082
+    depends_on:
+      oracle:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  payment-service:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: payment-service
+    image: dinedash/payment-service:local
+    environment:
+      SERVER_PORT: 8084
+      ORACLE_HOST: oracle
+      PAYMENT_DB_PASSWORD: ${PAYMENT_DB_PASSWORD:-dinedash}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY:-sk_test_placeholder}
+      STRIPE_PUBLISHABLE_KEY: ${STRIPE_PUBLISHABLE_KEY:-}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET:-whsec_placeholder}
+    depends_on:
+      oracle:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  delivery-service:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: delivery-service
+    image: dinedash/delivery-service:local
+    environment:
+      SERVER_PORT: 8085
+      MONGO_URI: mongodb://${MONGO_ROOT_USER:-dinedash}:${MONGO_ROOT_PASSWORD:-dinedash}@mongodb:27017/dinedash_delivery?authSource=admin
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      FIREBASE_ENABLED: ${FIREBASE_ENABLED:-false}
+      FIREBASE_DATABASE_URL: ${FIREBASE_DATABASE_URL:-}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  notification-service:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: notification-service
+    image: dinedash/notification-service:local
+    environment:
+      SERVER_PORT: 8086
+      MONGO_URI: mongodb://${MONGO_ROOT_USER:-dinedash}:${MONGO_ROOT_PASSWORD:-dinedash}@mongodb:27017/dinedash_notification?authSource=admin
+      KAFKA_BOOTSTRAP_SERVERS: kafka:29092
+      FIREBASE_ENABLED: ${FIREBASE_ENABLED:-false}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  api-gateway:
+    build:
+      <<: *service-build
+      args:
+        SERVICE: api-gateway
+    image: dinedash/api-gateway:local
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: 8080
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET in .env}
+      CORS_ALLOWED_ORIGINS: http://localhost:3000,http://localhost:5173
+      AUTH_SERVICE_URL: http://auth-user-service:8081
+      RESTAURANT_SERVICE_URL: http://restaurant-service:8082
+      ORDER_SERVICE_URL: http://order-service:8083
+      PAYMENT_SERVICE_URL: http://payment-service:8084
+      DELIVERY_SERVICE_URL: http://delivery-service:8085
+      NOTIFICATION_SERVICE_URL: http://notification-service:8086
+    depends_on:
+      - auth-user-service
+      - restaurant-service
+      - order-service
+      - payment-service
+      - delivery-service
+      - notification-service
+
+  frontend:
+    build:
+      context: frontend
+    image: dinedash/frontend:local
+    ports:
+      - "3000:80"
+    environment:
+      API_UPSTREAM: http://api-gateway:8080
+    depends_on:
+      - api-gateway
+
 volumes:
   mongo-data:
   oracle-data:
