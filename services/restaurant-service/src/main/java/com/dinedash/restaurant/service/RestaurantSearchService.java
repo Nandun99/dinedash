@@ -66,7 +66,8 @@ public class RestaurantSearchService {
     }
 
     private static Criteria buildFilter(SearchCriteria criteria) {
-        Criteria filter = new Criteria();
+        Criteria filter = Criteria.where("approvalStatus")
+                .nin(Restaurant.ApprovalStatus.PENDING_APPROVAL, Restaurant.ApprovalStatus.SUSPENDED);
         if (StringUtils.hasText(criteria.query())) {
             filter.and("name").regex(Pattern.quote(criteria.query().trim()), "i");
         }
