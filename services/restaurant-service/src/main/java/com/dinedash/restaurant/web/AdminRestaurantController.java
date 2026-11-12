@@ -1,6 +1,7 @@
 package com.dinedash.restaurant.web;
 
 import com.dinedash.common.error.NotFoundException;
+import com.dinedash.restaurant.cache.CatalogCacheEvictor;
 import com.dinedash.restaurant.domain.Restaurant;
 import com.dinedash.restaurant.dto.RestaurantResponse;
 import com.dinedash.restaurant.repository.RestaurantRepository;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AdminRestaurantController {
 
     private final RestaurantRepository restaurantRepository;
+    private final CatalogCacheEvictor cacheEvictor;
 
     @GetMapping
     public Page<RestaurantResponse> list(@RequestParam(required = false) Restaurant.ApprovalStatus status,
@@ -40,6 +42,8 @@ public class AdminRestaurantController {
                 .orElseThrow(() -> new NotFoundException("Restaurant not found"));
         restaurant.setApprovalStatus(value);
         log.info("Restaurant {} is now {}", restaurantId, value);
-        return RestaurantResponse.from(restaurantRepository.save(restaurant));
+        RestaurantResponse saved = RestaurantResponse.from(restaurantRepository.save(restaurant));
+        cacheEvictor.restaurantChanged(restaurantId);
+        return saved;
     }
 }

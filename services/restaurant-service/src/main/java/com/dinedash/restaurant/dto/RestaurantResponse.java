@@ -29,6 +29,13 @@ public record RestaurantResponse(
         int averagePrepMinutes,
         Restaurant.ApprovalStatus approvalStatus
 ) {
+    public RestaurantResponse withCurrentOpenState() {
+        boolean open = acceptingOrders && Restaurant.isOpenAt(opensAt, closesAt, ZonedDateTime.now());
+        return new RestaurantResponse(id, ownerId, name, description, cuisines, phone, address, latitude, longitude,
+                logoUrl, coverImageUrl, opensAt, closesAt, acceptingOrders, open, deliveryFee, minimumOrder,
+                averagePrepMinutes, approvalStatus);
+    }
+
     public static RestaurantResponse from(Restaurant r) {
         return new RestaurantResponse(r.getId(), r.getOwnerId(), r.getName(), r.getDescription(), r.getCuisines(),
                 r.getPhone(), r.getAddress(), r.getLocation().getY(), r.getLocation().getX(), r.getLogoUrl(),

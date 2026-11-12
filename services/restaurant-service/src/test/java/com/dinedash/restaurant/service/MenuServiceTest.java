@@ -1,6 +1,7 @@
 package com.dinedash.restaurant.service;
 
 import com.dinedash.common.error.NotFoundException;
+import com.dinedash.restaurant.cache.CatalogCacheEvictor;
 import com.dinedash.restaurant.domain.MenuItem;
 import com.dinedash.restaurant.domain.Restaurant;
 import com.dinedash.restaurant.dto.MenuItemRequest;
@@ -30,6 +31,8 @@ class MenuServiceTest {
     private RestaurantRepository restaurantRepository;
     @Mock
     private RestaurantService restaurantService;
+    @Mock
+    private CatalogCacheEvictor cacheEvictor;
 
     @InjectMocks
     private MenuService menuService;
@@ -45,6 +48,7 @@ class MenuServiceTest {
         assertThat(response.name()).isEqualTo("Chicken Kottu");
         assertThat(response.restaurantId()).isEqualTo("r1");
         assertThat(response.available()).isTrue();
+        verify(cacheEvictor).menuChanged("r1");
     }
 
     @Test

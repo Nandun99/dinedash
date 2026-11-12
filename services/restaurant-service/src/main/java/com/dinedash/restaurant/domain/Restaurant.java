@@ -84,6 +84,10 @@ public class Restaurant {
     private Long version;
 
     public boolean isOpenAt(ZonedDateTime time) {
+        return isOpenAt(opensAt, closesAt, time);
+    }
+
+    public static boolean isOpenAt(LocalTime opensAt, LocalTime closesAt, ZonedDateTime time) {
         if (opensAt == null || closesAt == null) {
             return true;
         }
