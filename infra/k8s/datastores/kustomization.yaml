@@ -1,0 +1,10 @@
+# Self-hosted data stores for local clusters only. Production uses managed services.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dinedash
+
+resources:
+  - kafka.yaml
+  - mongodb.yaml
+  - oracle.yaml
+  - mssql.yaml
