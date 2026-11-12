@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  labels:
+    app: payment-service
+spec:
+  replicas: 2
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: payment-service
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1
+  template:
+    metadata:
+      labels:
+        app: payment-service
+    spec:
+      securityContext:
+        runAsNonRoot: true
+      containers:
+        - name: payment-service
+          image: dinedash/payment-service
+          ports:
+            - name: http
+              containerPort: 8084
+          envFrom:
+            - configMapRef:
+                name: dinedash-config
+          env:
+            - name: SERVER_PORT
+              value: "8084"
+            - name: PAYMENT_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: dinedash-secrets
+                  key: PAYMENT_DB_PASSWORD
+            - name: STRIPE_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dinedash-secrets
+                  key: STRIPE_SECRET_KEY
+            - name: STRIPE_PUBLISHABLE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dinedash-secrets
+                  key: STRIPE_PUBLISHABLE_KEY
+            - name: STRIPE_WEBHOOK_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: dinedash-secrets
+                  key: STRIPE_WEBHOOK_SECRET
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+            limits:
+              memory: 768Mi
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 5
+            failureThreshold: 36
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
+            periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-service
+  labels:
+    app: payment-service
+spec:
+  selector:
+    app: payment-service
+  ports:
+    - name: http
+      port: 8084
+      targetPort: http

@@ -33,3 +33,6 @@ data/
 
 # Maven wrapper download
 .mvn/wrapper/maven-wrapper.jar
+
+# Kubernetes secrets (generated from secrets.env.example)
+infra/k8s/**/secrets.env
