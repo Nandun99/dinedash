@@ -23,13 +23,13 @@ FROM eclipse-temurin:21-jre-alpine
 ARG SERVICE
 ENV SERVICE_NAME=${SERVICE} \
     JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"
-RUN addgroup -S app && adduser -S app -G app && apk add --no-cache wget
+RUN addgroup -S -g 10001 app && adduser -S -u 10001 -G app app && apk add --no-cache wget
 WORKDIR /app
 COPY --from=extract /extract/layers/dependencies/ ./
 COPY --from=extract /extract/layers/spring-boot-loader/ ./
 COPY --from=extract /extract/layers/snapshot-dependencies/ ./
 COPY --from=extract /extract/layers/application/ ./
-USER app
+USER 10001
 HEALTHCHECK --interval=15s --timeout=3s --start-period=60s --retries=5 \
     CMD wget -qO- "http://localhost:${SERVER_PORT:-8080}/actuator/health/liveness" || exit 1
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]
