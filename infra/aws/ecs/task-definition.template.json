@@ -1,0 +1,29 @@
+{
+  "family": "dinedash-__NAME__",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "__CPU__",
+  "memory": "__MEMORY__",
+  "runtimePlatform": { "operatingSystemFamily": "LINUX", "cpuArchitecture": "X86_64" },
+  "executionRoleArn": "arn:aws:iam::__ACCOUNT__:role/dinedash-ecs-task-execution",
+  "taskRoleArn": "arn:aws:iam::__ACCOUNT__:role/__TASK_ROLE__",
+  "containerDefinitions": [
+    {
+      "name": "__NAME__",
+      "image": "__ACCOUNT__.dkr.ecr.__REGION__.amazonaws.com/dinedash/__NAME__:latest",
+      "essential": true,
+      "portMappings": [{ "name": "__NAME__", "containerPort": __PORT__, "protocol": "tcp", "appProtocol": "http" }],
+      "environment": [],
+      "secrets": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/dinedash/__NAME__",
+          "awslogs-region": "__REGION__",
+          "awslogs-stream-prefix": "ecs",
+          "awslogs-create-group": "true"
+        }
+      }
+    }
+  ]
+}
