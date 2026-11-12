@@ -1,0 +1,42 @@
+# Local cluster (minikube / kind):
+#   cp ../../base/secrets.env.example ../../base/secrets.env   # and fill it in
+#   kubectl apply -k infra/k8s/overlays/local
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+  - ../../datastores
+
+images:
+  - name: dinedash/api-gateway
+    newTag: local
+  - name: dinedash/auth-user-service
+    newTag: local
+  - name: dinedash/restaurant-service
+    newTag: local
+  - name: dinedash/order-service
+    newTag: local
+  - name: dinedash/payment-service
+    newTag: local
+  - name: dinedash/delivery-service
+    newTag: local
+  - name: dinedash/notification-service
+    newTag: local
+  - name: dinedash/frontend
+    newTag: local
+
+patches:
+  # One replica of everything is plenty on a laptop
+  - target:
+      kind: Deployment
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: HorizontalPodAutoscaler
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
