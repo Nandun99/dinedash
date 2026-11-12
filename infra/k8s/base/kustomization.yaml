@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: dinedash
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - apps/api-gateway.yaml
+  - apps/auth-user-service.yaml
+  - apps/restaurant-service.yaml
+  - apps/order-service.yaml
+  - apps/payment-service.yaml
+  - apps/delivery-service.yaml
+  - apps/notification-service.yaml
+  - apps/frontend.yaml
+  - ingress.yaml
+  - hpa.yaml
+  - pdb.yaml
+
+secretGenerator:
+  - name: dinedash-secrets
+    envs:
+      - secrets.env
+
+generatorOptions:
+  disableNameSuffixHash: true
+
+labels:
+  - pairs:
+      app.kubernetes.io/part-of: dinedash
+    includeSelectors: false
