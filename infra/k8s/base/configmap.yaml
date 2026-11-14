@@ -6,6 +6,7 @@ data:
   KAFKA_BOOTSTRAP_SERVERS: kafka:9092
   MSSQL_HOST: mssql
   ORACLE_HOST: oracle
+  REDIS_HOST: redis
   AUTH_SERVICE_URL: http://auth-user-service:8081
   RESTAURANT_SERVICE_URL: http://restaurant-service:8082
   ORDER_SERVICE_URL: http://order-service:8083

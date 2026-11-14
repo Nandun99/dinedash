@@ -6,5 +6,6 @@ namespace: dinedash
 resources:
   - kafka.yaml
   - mongodb.yaml
+  - redis.yaml
   - oracle.yaml
   - mssql.yaml
