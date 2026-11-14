@@ -2,6 +2,7 @@ package com.dinedash.restaurant.service;
 
 import com.dinedash.common.error.BadRequestException;
 import com.dinedash.common.error.NotFoundException;
+import com.dinedash.restaurant.cache.CatalogCacheEvictor;
 import com.dinedash.restaurant.domain.Address;
 import com.dinedash.restaurant.domain.Restaurant;
 import com.dinedash.restaurant.dto.RestaurantRequest;
@@ -23,6 +24,7 @@ public class RestaurantService {
     static final int MAX_RESTAURANTS_PER_OWNER = 5;
 
     private final RestaurantRepository restaurantRepository;
+    private final CatalogCacheEvictor cacheEvictor;
 
     public List<RestaurantResponse> listForOwner(Long ownerId) {
         return restaurantRepository.findByOwnerIdOrderByCreatedAtDesc(ownerId).stream()
@@ -45,14 +47,18 @@ public class RestaurantService {
     public RestaurantResponse update(Long ownerId, String restaurantId, RestaurantRequest request) {
         Restaurant restaurant = getOwned(ownerId, restaurantId);
         apply(restaurant, request);
-        return RestaurantResponse.from(restaurantRepository.save(restaurant));
+        RestaurantResponse saved = RestaurantResponse.from(restaurantRepository.save(restaurant));
+        cacheEvictor.restaurantChanged(restaurantId);
+        return saved;
     }
 
     public RestaurantResponse setAcceptingOrders(Long ownerId, String restaurantId, boolean accepting) {
         Restaurant restaurant = getOwned(ownerId, restaurantId);
         restaurant.setAcceptingOrders(accepting);
         log.info("Restaurant {} accepting orders: {}", restaurantId, accepting);
-        return RestaurantResponse.from(restaurantRepository.save(restaurant));
+        RestaurantResponse saved = RestaurantResponse.from(restaurantRepository.save(restaurant));
+        cacheEvictor.restaurantChanged(restaurantId);
+        return saved;
     }
 
     public Restaurant getOwned(Long ownerId, String restaurantId) {

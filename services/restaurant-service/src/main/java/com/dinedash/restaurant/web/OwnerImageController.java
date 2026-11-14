@@ -3,6 +3,7 @@ package com.dinedash.restaurant.web;
 import com.dinedash.common.error.BadRequestException;
 import com.dinedash.common.error.NotFoundException;
 import com.dinedash.common.security.CurrentUser;
+import com.dinedash.restaurant.cache.CatalogCacheEvictor;
 import com.dinedash.restaurant.domain.MenuItem;
 import com.dinedash.restaurant.domain.Restaurant;
 import com.dinedash.restaurant.dto.ImageRequests.AttachImageRequest;
@@ -35,6 +36,7 @@ public class OwnerImageController {
     private final RestaurantRepository restaurantRepository;
     private final MenuItemRepository menuItemRepository;
     private final ImageUploadService imageUploadService;
+    private final CatalogCacheEvictor cacheEvictor;
 
     @PostMapping("/upload-url")
     public UploadTicket uploadUrl(@AuthenticationPrincipal CurrentUser user, @PathVariable String restaurantId,
@@ -53,10 +55,12 @@ public class OwnerImageController {
             case LOGO -> {
                 restaurant.setLogoUrl(url);
                 restaurantRepository.save(restaurant);
+                cacheEvictor.restaurantChanged(restaurantId);
             }
             case COVER -> {
                 restaurant.setCoverImageUrl(url);
                 restaurantRepository.save(restaurant);
+                cacheEvictor.restaurantChanged(restaurantId);
             }
             case MENU_ITEM -> {
                 if (request.menuItemId() == null) {
@@ -66,6 +70,7 @@ public class OwnerImageController {
                         .orElseThrow(() -> new NotFoundException("Menu item not found"));
                 item.setImageUrl(url);
                 menuItemRepository.save(item);
+                cacheEvictor.menuChanged(restaurantId);
             }
         }
         return Map.of("url", url);

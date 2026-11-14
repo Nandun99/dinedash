@@ -1,12 +1,15 @@
 package com.dinedash.restaurant.service;
 
 import com.dinedash.common.error.NotFoundException;
+import com.dinedash.restaurant.cache.CacheNames;
+import com.dinedash.restaurant.cache.CatalogCacheEvictor;
 import com.dinedash.restaurant.domain.MenuItem;
 import com.dinedash.restaurant.dto.MenuItemRequest;
 import com.dinedash.restaurant.dto.MenuItemResponse;
 import com.dinedash.restaurant.repository.MenuItemRepository;
 import com.dinedash.restaurant.repository.RestaurantRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,8 +21,10 @@ public class MenuService {
     private final MenuItemRepository menuItemRepository;
     private final RestaurantRepository restaurantRepository;
     private final RestaurantService restaurantService;
+    private final CatalogCacheEvictor cacheEvictor;
 
     /** Public menu: only items currently available. */
+    @Cacheable(cacheNames = CacheNames.MENUS, key = "#restaurantId")
     public List<MenuItemResponse> publicMenu(String restaurantId) {
         if (!restaurantRepository.existsById(restaurantId)) {
             throw new NotFoundException("Restaurant not found");
@@ -42,23 +47,30 @@ public class MenuService {
         MenuItem item = new MenuItem();
         item.setRestaurantId(restaurantId);
         apply(item, request);
-        return MenuItemResponse.from(menuItemRepository.save(item));
+        MenuItemResponse saved = MenuItemResponse.from(menuItemRepository.save(item));
+        cacheEvictor.menuChanged(restaurantId);
+        return saved;
     }
 
     public MenuItemResponse update(Long ownerId, String restaurantId, String itemId, MenuItemRequest request) {
         MenuItem item = getOwnedItem(ownerId, restaurantId, itemId);
         apply(item, request);
-        return MenuItemResponse.from(menuItemRepository.save(item));
+        MenuItemResponse saved = MenuItemResponse.from(menuItemRepository.save(item));
+        cacheEvictor.menuChanged(restaurantId);
+        return saved;
     }
 
     public MenuItemResponse setAvailable(Long ownerId, String restaurantId, String itemId, boolean available) {
         MenuItem item = getOwnedItem(ownerId, restaurantId, itemId);
         item.setAvailable(available);
-        return MenuItemResponse.from(menuItemRepository.save(item));
+        MenuItemResponse saved = MenuItemResponse.from(menuItemRepository.save(item));
+        cacheEvictor.menuChanged(restaurantId);
+        return saved;
     }
 
     public void delete(Long ownerId, String restaurantId, String itemId) {
         menuItemRepository.delete(getOwnedItem(ownerId, restaurantId, itemId));
+        cacheEvictor.menuChanged(restaurantId);
     }
 
     MenuItem getOwnedItem(Long ownerId, String restaurantId, String itemId) {

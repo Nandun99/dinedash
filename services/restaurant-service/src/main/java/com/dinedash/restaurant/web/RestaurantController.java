@@ -1,11 +1,10 @@
 package com.dinedash.restaurant.web;
 
-import com.dinedash.common.error.NotFoundException;
 import com.dinedash.restaurant.dto.MenuItemResponse;
 import com.dinedash.restaurant.dto.PageResponse;
 import com.dinedash.restaurant.dto.RestaurantCard;
 import com.dinedash.restaurant.dto.RestaurantResponse;
-import com.dinedash.restaurant.repository.RestaurantRepository;
+import com.dinedash.restaurant.service.CatalogQueryService;
 import com.dinedash.restaurant.service.MenuService;
 import com.dinedash.restaurant.service.RestaurantSearchService;
 import com.dinedash.restaurant.service.RestaurantSearchService.SearchCriteria;
@@ -24,7 +23,7 @@ import java.util.List;
 public class RestaurantController {
 
     private final RestaurantSearchService searchService;
-    private final RestaurantRepository restaurantRepository;
+    private final CatalogQueryService catalogQueryService;
     private final MenuService menuService;
 
     @GetMapping
@@ -40,10 +39,7 @@ public class RestaurantController {
 
     @GetMapping("/{restaurantId}")
     public RestaurantResponse get(@PathVariable String restaurantId) {
-        return restaurantRepository.findById(restaurantId)
-                .filter(r -> r.isVisible())
-                .map(RestaurantResponse::from)
-                .orElseThrow(() -> new NotFoundException("Restaurant not found"));
+        return catalogQueryService.publicRestaurant(restaurantId).withCurrentOpenState();
     }
 
     @GetMapping("/{restaurantId}/menu")

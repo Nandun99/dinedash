@@ -54,6 +54,18 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7.4-alpine
+    container_name: dinedash-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+
   oracle:
     image: gvenzl/oracle-free:23-slim
     container_name: dinedash-oracle
@@ -106,7 +118,7 @@ services:
 
   # ---------------------------------------------------------------------------
   # Application services. Start only the infrastructure above with:
-  #   docker compose up -d kafka mongodb oracle mssql mssql-init
+  #   docker compose up -d kafka mongodb redis oracle mssql mssql-init
   # ---------------------------------------------------------------------------
   auth-user-service:
     build: &service-build
@@ -135,6 +147,7 @@ services:
     environment:
       SERVER_PORT: 8082
       MONGO_URI: mongodb://${MONGO_ROOT_USER:-dinedash}:${MONGO_ROOT_PASSWORD:-dinedash}@mongodb:27017/dinedash_restaurant?authSource=admin
+      REDIS_HOST: redis
       KAFKA_BOOTSTRAP_SERVERS: kafka:29092
       AWS_REGION: ${AWS_REGION:-ap-south-1}
       S3_BUCKET: ${S3_BUCKET:-dinedash-media}
@@ -144,6 +157,8 @@ services:
       mongodb:
         condition: service_healthy
       kafka:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   order-service:
