@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { useParams } from 'react-router-dom'
+import { cacheTimes, queryKeys } from '../../api/queryKeys'
 import { restaurantApi } from '../../api/restaurants'
 import { useCart } from '../../cart/useCart'
 import Alert from '../../components/ui/Alert'
@@ -10,8 +11,8 @@ import MenuItemRow from './MenuItemRow'
 
 export default function RestaurantDetailPage() {
   const { id = '' } = useParams()
-  const restaurant = useQuery({ queryKey: ['restaurant', id], queryFn: () => restaurantApi.get(id) })
-  const menu = useQuery({ queryKey: ['menu', id], queryFn: () => restaurantApi.menu(id) })
+  const restaurant = useQuery({ queryKey: queryKeys.restaurant(id), queryFn: () => restaurantApi.get(id), ...cacheTimes.restaurant })
+  const menu = useQuery({ queryKey: queryKeys.menu(id), queryFn: () => restaurantApi.menu(id), ...cacheTimes.menu })
   const { add } = useCart()
 
   const byCategory = useMemo(() => {

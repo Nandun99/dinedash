@@ -1,5 +1,6 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useState } from 'react'
+import { cacheTimes, queryKeys } from '../../api/queryKeys'
 import { restaurantApi } from '../../api/restaurants'
 import Alert from '../../components/ui/Alert'
 import Button from '../../components/ui/Button'
@@ -17,9 +18,10 @@ export default function RestaurantListPage() {
 
   const params = { q: search || undefined, cuisine, page, lat: geo.coords?.lat, lng: geo.coords?.lng }
   const { data, isLoading, isError } = useQuery({
-    queryKey: ['restaurants', params],
+    queryKey: queryKeys.restaurants(params),
     queryFn: () => restaurantApi.search(params),
     placeholderData: keepPreviousData,
+    ...cacheTimes.restaurants,
   })
 
   return (
