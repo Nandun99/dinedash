@@ -11,7 +11,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Configuration
@@ -26,7 +28,7 @@ public class FirebaseConfig {
     public FirebaseDatabase firebaseDatabase(@Value("${dinedash.firebase.database-url}") String databaseUrl)
             throws IOException {
         FirebaseOptions options = FirebaseOptions.builder()
-                .setCredentials(GoogleCredentials.getApplicationDefault())
+                .setCredentials(credentials())
                 .setDatabaseUrl(databaseUrl)
                 .build();
         FirebaseApp app = FirebaseApp.getApps().isEmpty() ? FirebaseApp.initializeApp(options) : FirebaseApp.getInstance();
@@ -53,5 +55,17 @@ public class FirebaseConfig {
             public void publishStatus(com.dinedash.delivery.domain.Delivery delivery) {
             }
         };
+    }
+
+    /**
+     * ECS injects the service account JSON from SSM as FIREBASE_CREDENTIALS_JSON;
+     * locally and in Kubernetes GOOGLE_APPLICATION_CREDENTIALS points at a mounted file.
+     */
+    static GoogleCredentials credentials() throws IOException {
+        String json = System.getenv("FIREBASE_CREDENTIALS_JSON");
+        if (json != null && !json.isBlank()) {
+            return GoogleCredentials.fromStream(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+        }
+        return GoogleCredentials.getApplicationDefault();
     }
 }

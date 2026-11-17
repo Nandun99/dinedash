@@ -11,7 +11,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Slf4j
@@ -24,7 +26,7 @@ public class PushConfig {
             throws IOException {
         FirebaseApp app = FirebaseApp.getApps().isEmpty()
                 ? FirebaseApp.initializeApp(FirebaseOptions.builder()
-                        .setCredentials(GoogleCredentials.getApplicationDefault())
+                        .setCredentials(credentials())
                         .build())
                 : FirebaseApp.getInstance();
         log.info("FCM web push enabled");
@@ -36,5 +38,17 @@ public class PushConfig {
     public PushSender noopPushSender() {
         log.info("Firebase disabled; notifications are in-app only");
         return (tokens, title, body, link) -> List.of();
+    }
+
+    /**
+     * ECS injects the service account JSON from SSM as FIREBASE_CREDENTIALS_JSON;
+     * locally and in Kubernetes GOOGLE_APPLICATION_CREDENTIALS points at a mounted file.
+     */
+    static GoogleCredentials credentials() throws IOException {
+        String json = System.getenv("FIREBASE_CREDENTIALS_JSON");
+        if (json != null && !json.isBlank()) {
+            return GoogleCredentials.fromStream(new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8)));
+        }
+        return GoogleCredentials.getApplicationDefault();
     }
 }
