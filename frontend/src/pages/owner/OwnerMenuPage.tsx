@@ -15,7 +15,11 @@ export default function OwnerMenuPage() {
   const [editing, setEditing] = useState<MenuItem | 'new' | null>(null)
   const key = ['owner', 'menu', id]
   const { data: items, isLoading } = useQuery({ queryKey: key, queryFn: () => ownerApi.menu(id) })
-  const refresh = () => qc.invalidateQueries({ queryKey: key })
+  // Also drop the customer-facing menu cached in this browser
+  const refresh = () => {
+    qc.invalidateQueries({ queryKey: key })
+    qc.invalidateQueries({ queryKey: ['menu', id] })
+  }
 
   const save = useMutation({
     mutationFn: async ({ payload, image }: { payload: MenuItemPayload; image: File | null }) => {

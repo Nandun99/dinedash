@@ -1,11 +1,22 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
+import { cacheTimes, queryKeys } from '../../api/queryKeys'
+import { restaurantApi } from '../../api/restaurants'
 import type { RestaurantCard } from '../../types/restaurant'
 import { formatPrice } from '../../utils/format'
 
 export default function RestaurantCardView({ restaurant }: { restaurant: RestaurantCard }) {
+  const qc = useQueryClient()
+  // Warm the cache on hover so the restaurant page opens instantly
+  const prefetch = () => {
+    qc.prefetchQuery({ queryKey: queryKeys.restaurant(restaurant.id), queryFn: () => restaurantApi.get(restaurant.id), ...cacheTimes.restaurant })
+    qc.prefetchQuery({ queryKey: queryKeys.menu(restaurant.id), queryFn: () => restaurantApi.menu(restaurant.id), ...cacheTimes.menu })
+  }
   return (
     <Link
       to={`/restaurants/${restaurant.id}`}
+      onMouseEnter={prefetch}
+      onFocus={prefetch}
       className="group overflow-hidden rounded-2xl bg-white shadow-sm ring-1 ring-stone-200 transition hover:shadow-md"
     >
       <div className="relative h-36 bg-stone-200">
