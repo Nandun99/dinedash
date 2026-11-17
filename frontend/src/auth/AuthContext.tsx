@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { authApi } from '../api/auth'
+import { queryClient } from '../lib/queryClient'
 import type { LoginPayload, RegisterPayload, User } from '../types/auth'
 import { tokenStorage } from './tokenStorage'
 
@@ -41,6 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const session = tokenStorage.load()
     tokenStorage.clear()
     setUser(null)
+    // Drop cached private data (orders, profile, notifications) of the previous user
+    queryClient.removeQueries({ predicate: (q) => !['restaurants', 'restaurant', 'menu'].includes(String(q.queryKey[0])) })
     if (session) await authApi.logout(session.refreshToken).catch(() => undefined)
   }, [])
 
